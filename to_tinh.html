@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- 1. TIÊU ĐỀ TAB TRÌNH DUYỆT -->
+    <title>Gửi Người Thương - Mưa Trái Tim</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at 50% 35%, #2b0918 0%, #14030c 60%, #090105 100%);
+            color: #fff;
+        }
+        
+        .font-script {
+            font-family: 'Dancing Script', cursive;
+        }
+        
+        @keyframes pulseGlow {
+            0%,
+            100% {
+                transform: scale(1);
+                filter: drop-shadow(0 0 18px rgba(255, 77, 136, 0.75));
+            }
+            50% {
+                transform: scale(1.12);
+                filter: drop-shadow(0 0 34px rgba(255, 105, 160, 1));
+            }
+        }
+        
+        @keyframes textBreath {
+            0%,
+            100% {
+                opacity: 0.95;
+                transform: translateY(0px);
+                text-shadow: 0 0 16px rgba(255, 120, 165, 0.8), 0 0 32px rgba(255, 50, 120, 0.4);
+            }
+            50% {
+                opacity: 0.65;
+                transform: translateY(-4px);
+                text-shadow: 0 0 24px rgba(255, 160, 195, 1), 0 0 45px rgba(255, 80, 140, 0.8);
+            }
+        }
+        
+        @keyframes ringRipple {
+            0% {
+                transform: scale(0.85);
+                opacity: 0.75;
+            }
+            100% {
+                transform: scale(2.2);
+                opacity: 0;
+            }
+        }
+        
+        .heart-pulse {
+            animation: pulseGlow 2s infinite ease-in-out;
+        }
+        
+        .breath-text {
+            animation: textBreath 2.4s infinite ease-in-out;
+        }
+        
+        .ripple-ring {
+            position: absolute;
+            border: 2px solid rgba(255, 110, 160, 0.5);
+            border-radius: 9999px;
+            animation: ringRipple 2.6s infinite cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+        }
+        
+        .ripple-ring-delay {
+            animation-delay: 1.3s;
+        }
+        
+        .glass-panel {
+            background: rgba(35, 8, 22, 0.62);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 150, 185, 0.25);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 77, 136, 0.2);
+        }
+        
+        .fade-transition {
+            transition: opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1), transform 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .hidden-screen {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(1.06);
+        }
+        
+        .visible-screen {
+            opacity: 1;
+            pointer-events: auto;
+            transform: scale(1);
+        }
+        
+        .yes-btn-smooth {
+            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .yes-fullscreen {
+            position: fixed !important;
+            inset: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            border-radius: 0 !important;
+            z-index: 50 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+    </style>
+</head>
+
+<body class="relative w-full h-full">
+
+    <!-- Background & Heart Rain Canvas -->
+    <canvas id="heartCanvas" class="fixed inset-0 w-full h-full z-0 block cursor-pointer"></canvas>
+
+    <!-- STAGE 1: TRANG ĐẦU TIÊN - CÂU HỎI "CẬU CÓ THÍCH MÌNH KHÔNG?" & 2 NÚT CÓ / KHÔNG -->
+    <div id="introScreen" class="fixed inset-0 z-20 flex flex-col items-center justify-center px-6 fade-transition visible-screen overflow-hidden">
+        <div class="relative flex items-center justify-center mb-8">
+            <div class="w-24 h-24 ripple-ring"></div>
+            <div class="w-24 h-24 ripple-ring ripple-ring-delay"></div>
+            <button id="startBtn" type="button" aria-label="Biểu tượng trái tim" class="relative z-10 w-24 h-24 rounded-full bg-gradient-to-br from-pink-500 via-rose-500 to-red-600 flex items-center justify-center shadow-2xl focus:outline-none group transition-transform active:scale-95">
+        <svg class="w-12 h-12 text-white heart-pulse" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+      </button>
+        </div>
+
+        <!-- 2. CÂU HỎI CHÍNH MÀN HÌNH ĐẦU -->
+        <h1 id="introTitle" class="text-2xl sm:text-4xl md:text-5xl font-bold tracking-wide text-pink-100 text-center breath-text max-w-2xl">
+            Cậu có thích mình không?
+        </h1>
+        <!-- 3. DÒNG CHỮ PHỤ MÀN HÌNH ĐẦU -->
+        <p id="introSubtitle" class="mt-3 mb-8 text-sm sm:text-base text-pink-300/85 text-center font-light tracking-wider">
+            Ấn vào để tiếp tục trả lời thật lòng nhé ✨
+        </p>
+
+        <!-- KHU VỰC 2 NÚT: CÓ & KHÔNG -->
+        <div id="choiceContainer" class="flex flex-wrap items-center justify-center gap-4 sm:gap-6 max-w-full">
+            <button id="yesBtn" type="button" class="yes-btn-smooth px-8 py-3.5 rounded-full bg-gradient-to-r from-pink-500 via-rose-500 to-red-500 text-white font-bold text-lg sm:text-xl shadow-[0_0_25px_rgba(255,77,136,0.7)] hover:brightness-110 active:scale-95 focus:outline-none cursor-pointer">
+        <span id="yesBtnText">Có 💖</span>
+        <span id="yesFullHint" class="hidden"></span>
+      </button>
+
+            <button id="noBtn" type="button" class="px-7 py-3.5 rounded-full glass-panel text-pink-200 hover:text-white hover:bg-pink-500/20 font-medium text-base sm:text-lg transition-all duration-300 active:scale-95 focus:outline-none cursor-pointer">
+        Không
+      </button>
+        </div>
+    </div>
+
+    <!-- STAGE 2: MÀN HÌNH MƯA TRÁI TIM & ĐIỀU KHIỂN -->
+    <div id="rainStage" class="fixed inset-0 z-10 flex flex-col justify-between p-4 sm:p-6 pointer-events-none fade-transition hidden-screen">
+
+        <!-- Top Floating Bar -->
+        <div class="w-full flex flex-wrap items-center justify-between gap-2 pointer-events-auto">
+            <div class="glass-panel px-3.5 py-2 rounded-full flex items-center gap-2 text-xs sm:text-sm text-pink-100">
+                <span class="inline-block w-2.5 h-2.5 rounded-full bg-pink-400 animate-ping"></span>
+                <!-- 4. NHÃN GÓC TRÁI TRÊN -->
+                <span id="badgeTitle" class="font-medium">Mưa Trái Tim</span>
+                <span id="heartCounter" class="text-pink-300/80 hidden sm:inline">• Chạm màn hình để bắn tim</span>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <!-- Speed / Intensity Selector -->
+                <div class="glass-panel p-1 rounded-full flex items-center gap-1 text-xs">
+                    <button id="modeSoftBtn" type="button" class="px-2.5 py-1 rounded-full transition text-pink-200 hover:text-white">
+            Nhẹ
+          </button>
+                    <button id="modeRomanticBtn" type="button" class="px-2.5 py-1 rounded-full transition bg-pink-500/80 text-white font-medium shadow">
+            Lãng mạn
+          </button>
+                    <button id="modeStormBtn" type="button" class="px-2.5 py-1 rounded-full transition text-pink-200 hover:text-white">
+            Bão tim
+          </button>
+                </div>
+
+                <!-- Burst Button -->
+                <button id="burstBtn" type="button" title="Pháo hoa trái tim" class="glass-panel px-3 py-2 rounded-full text-xs sm:text-sm text-pink-100 hover:bg-pink-500/30 active:scale-95 transition flex items-center gap-1.5">
+          <span>💖</span>
+          <span class="hidden sm:inline">Bắn tim</span>
+        </button>
+
+                <!-- Sound Toggle -->
+                <button id="soundToggleBtn" type="button" title="Bật/Tắt âm thanh" class="glass-panel p-2 rounded-full text-pink-100 hover:bg-pink-500/30 active:scale-95 transition">
+          <span id="soundIcon">🔊</span>
+        </button>
+
+                <!-- Replay Button -->
+                <button id="replayBtn" type="button" title="Quay lại màn hình đầu" class="glass-panel px-3 py-2 rounded-full text-xs sm:text-sm text-pink-200 hover:text-white hover:bg-pink-500/30 active:scale-95 transition">
+          Quay lại
+        </button>
+            </div>
+        </div>
+
+        <!-- Center Floating Romantic Caption -->
+        <div class="my-auto flex flex-col items-center justify-center text-center px-4">
+            <div id="centerCaption" class="transition-all duration-700 transform translate-y-2 opacity-95 max-w-xl">
+                <!-- 5. TIÊU ĐỀ LỜI TỎ TÌNH GIỮA MÀN HÌNH -->
+                <p id="floatingTitle" class="font-script text-4xl sm:text-6xl md:text-7xl text-pink-200 drop-shadow-[0_4px_24px_rgba(255,77,136,0.85)]">
+                    Cơn mưa tình yêu
+                </p>
+                <!-- 6. LỜI NHẮN TỎ TÌNH GIỮA MÀN HÌNH -->
+                <p id="floatingSubtitle" class="mt-3 text-sm sm:text-lg text-pink-100/90 font-light tracking-wide drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
+                    Mỗi nhịp tim rơi xuống đều mang theo nỗi nhớ dành cho cậu...
+                </p>
+            </div>
+        </div>
+
+        <!-- Bottom Hint Bar -->
+        <div class="w-full flex items-center justify-center gap-2 pointer-events-auto">
+            <button id="nextMessageBtn" type="button" class="glass-panel px-4 py-1.5 rounded-full text-xs text-pink-100 hover:text-white hover:bg-pink-500/25 transition">
+        Đổi câu tỏ tình 💌
+      </button>
+            <button id="toggleCaptionBtn" type="button" class="glass-panel px-4 py-1.5 rounded-full text-xs text-pink-200/90 hover:text-white hover:bg-pink-500/25 transition">
+        Ẩn/Hiện chữ giữa màn hình
+      </button>
+        </div>
+
+    </div>
+
+    <script>
+        (function() {
+            // =========================================================================
+            // KHU VỰC CHỈNH SỬA VĂN BẢN (BẠN CHỈ CẦN SỬA NỘI DUNG TRONG DẤU NHÁY ĐƠN '')
+            // =========================================================================
+            const TEXT_CONFIG = {
+                // 1. Tiêu đề hiển thị trên tab trình duyệt
+                pageTitle: 'Gửi Người Thương - Mưa Trái Tim',
+
+                // 2. Màn hình Trang 1 (Câu hỏi & 2 nút Có / Không)
+                introTitle: 'Cậu có thích mình không?',
+                introSubtitle: 'Ấn vào để tiếp tục trả lời thật lòng nhé ✨',
+                yesButtonText: 'Có 💖',
+                yesFullScreenHint: '',
+
+                // Các câu hiển thị trên nút "Không" và dòng chữ phụ mỗi lần bấm "Không"
+                noButtonTexts: [
+                    'Không',
+                    'Nghĩ kỹ lại đi 🥺',
+                    'Đừng ấn Không mà 😭',
+                    'Thật sự không thích hả? 💔',
+                    'Năn nỉ luôn đó 🙏',
+                    'Thôi bấm Có đi mà ❤️'
+                ],
+                noReactionSubtitles: [
+                    'Ơ kìa, sao lại bấm Không thế? Chọn lại đi mà 🥺',
+                    'Nút Có đang to lên kìa, nhìn kỹ xem trái tim mách bảo gì đi 💓',
+                    'Càng bấm Không là nút Có càng bự ra đó nha 😆',
+                    'Không thoát được đâu, chỉ còn một lựa chọn duy nhất thôi! 💖',
+                    'To full màn hình rồi nhé, ấn Có để xem điều bất ngờ nào! ✨'
+                ],
+
+                // 3. Nhãn trạng thái góc trên bên trái (Trang 2)
+                badgeTitle: 'Created by: Thịnh Phạm aka Loke_Leo',
+                badgeHint: '• Gửi người tôi thương 💌',
+
+                // 4. Tiêu đề lớn ở giữa màn hình khi mưa trái tim rơi (Trang 2)
+                floatingTitle: 'Tớ thích cậu nhiều lắm!',
+
+                // 5. Danh sách các câu tỏ tình (sẽ hiển thị lần lượt khi bấm "Đổi câu tỏ tình 💌")
+                loveMessages: [
+                    'Biết ngay là cậu cũng thích mình mà! Mưa trái tim này dành riêng cho cậu đó 💖',
+                    'Mỗi nhịp tim rơi xuống đều mang theo nỗi nhớ dành cho cậu...',
+                    'Giữa hàng ngàn vì sao lấp lánh, ánh mắt tớ vẫn chỉ hướng về một người.',
+                    'Cảm ơn cậu vì đã xuất hiện và làm thế giới của tớ trở nên dịu dàng hơn.'
+                ]
+            };
+            // =========================================================================
+
+            const canvas = document.getElementById('heartCanvas');
+            const ctx = canvas.getContext('2d');
+
+            const introScreen = document.getElementById('introScreen');
+            const startBtn = document.getElementById('startBtn');
+            const yesBtn = document.getElementById('yesBtn');
+            const yesBtnText = document.getElementById('yesBtnText');
+            const yesFullHint = document.getElementById('yesFullHint');
+            const noBtn = document.getElementById('noBtn');
+            const rainStage = document.getElementById('rainStage');
+
+            const introTitleEl = document.getElementById('introTitle');
+            const introSubtitleEl = document.getElementById('introSubtitle');
+            const badgeTitleEl = document.getElementById('badgeTitle');
+            const heartCounterEl = document.getElementById('heartCounter');
+            const floatingTitleEl = document.getElementById('floatingTitle');
+            const floatingSubtitleEl = document.getElementById('floatingSubtitle');
+
+            const modeSoftBtn = document.getElementById('modeSoftBtn');
+            const modeRomanticBtn = document.getElementById('modeRomanticBtn');
+            const modeStormBtn = document.getElementById('modeStormBtn');
+            const burstBtn = document.getElementById('burstBtn');
+            const soundToggleBtn = document.getElementById('soundToggleBtn');
+            const soundIcon = document.getElementById('soundIcon');
+            const replayBtn = document.getElementById('replayBtn');
+            const nextMessageBtn = document.getElementById('nextMessageBtn');
+            const toggleCaptionBtn = document.getElementById('toggleCaptionBtn');
+            const centerCaption = document.getElementById('centerCaption');
+
+            let currentMessageIndex = 0;
+            let noClickCount = 0;
+            const MAX_NO_CLICKS_TO_FULLSCREEN = 5;
+
+            // Áp dụng nội dung từ TEXT_CONFIG lên giao diện
+            function applyTextConfig() {
+                document.title = TEXT_CONFIG.pageTitle;
+                introTitleEl.textContent = TEXT_CONFIG.introTitle;
+                introSubtitleEl.textContent = TEXT_CONFIG.introSubtitle;
+                yesBtnText.textContent = TEXT_CONFIG.yesButtonText;
+                yesFullHint.textContent = TEXT_CONFIG.yesFullScreenHint;
+                if (TEXT_CONFIG.noButtonTexts && TEXT_CONFIG.noButtonTexts.length > 0) {
+                    noBtn.textContent = TEXT_CONFIG.noButtonTexts[0];
+                }
+                badgeTitleEl.textContent = TEXT_CONFIG.badgeTitle;
+                heartCounterEl.textContent = TEXT_CONFIG.badgeHint;
+                floatingTitleEl.textContent = TEXT_CONFIG.floatingTitle;
+                if (TEXT_CONFIG.loveMessages && TEXT_CONFIG.loveMessages.length > 0) {
+                    floatingSubtitleEl.textContent = TEXT_CONFIG.loveMessages[0];
+                }
+            }
+
+            function resetQuestionStage() {
+                noClickCount = 0;
+                yesBtn.classList.remove('yes-fullscreen');
+                yesBtn.style.fontSize = '';
+                yesBtn.style.padding = '';
+                yesBtnText.style.fontSize = '';
+                yesFullHint.classList.add('hidden');
+                introSubtitleEl.classList.remove('hidden');
+                introTitleEl.classList.remove('hidden');
+                noBtn.classList.remove('hidden');
+                noBtn.style.transform = 'scale(1)';
+                noBtn.style.opacity = '1';
+                introTitleEl.textContent = TEXT_CONFIG.introTitle;
+                introSubtitleEl.textContent = TEXT_CONFIG.introSubtitle;
+                yesBtnText.textContent = TEXT_CONFIG.yesButtonText;
+                if (TEXT_CONFIG.noButtonTexts && TEXT_CONFIG.noButtonTexts.length > 0) {
+                    noBtn.textContent = TEXT_CONFIG.noButtonTexts[0];
+                }
+            }
+
+            let width = window.innerWidth;
+            let height = window.innerHeight;
+            let isStarted = false;
+            let soundEnabled = true;
+            let captionVisible = true;
+            let rainMode = 'romantic'; // 'soft' | 'romantic' | 'storm'
+
+            // Audio Synthesizer (Web Audio API)
+            let audioCtx = null;
+
+            function initAudio() {
+                if (!audioCtx) {
+                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContextClass) {
+                        audioCtx = new AudioContextClass();
+                    }
+                }
+                if (audioCtx && audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+            }
+
+            function playChime(freq, duration, delay) {
+                if (!soundEnabled || !audioCtx) return;
+                try {
+                    const now = audioCtx.currentTime + (delay || 0);
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, now);
+
+                    gain.gain.setValueAtTime(0.001, now);
+                    gain.gain.exponentialRampToValueAtTime(0.08, now + 0.04);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + (duration || 0.9));
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + (duration || 0.9));
+                } catch (e) {
+                    // Ignore audio context errors
+                }
+            }
+
+            function playStartChord() {
+                initAudio();
+                const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
+                notes.forEach((n, idx) => playChime(n, 1.4, idx * 0.11));
+            }
+
+            function playPopChime() {
+                initAudio();
+                const pentatonic = [523.25, 587.33, 659.25, 783.99, 880.0, 1046.5];
+                const note = pentatonic[Math.floor(Math.random() * pentatonic.length)];
+                playChime(note, 0.65, 0);
+            }
+
+            function playNoBoing() {
+                initAudio();
+                playChime(349.23, 0.35, 0);
+                playChime(311.13, 0.45, 0.08);
+            }
+
+            // Color Palettes for Hearts
+            const heartColors = [
+                '#ff2a6d',
+                '#ff4d88',
+                '#ff75a0',
+                '#ff9ebb',
+                '#ff1744',
+                '#f50057',
+                '#ff80ab',
+                '#ffb3c6'
+            ];
+
+            // Background twinkling stars
+            let stars = [];
+
+            function createStars() {
+                stars = [];
+                const count = Math.min(90, Math.floor((width * height) / 14000));
+                for (let i = 0; i < count; i++) {
+                    stars.push({
+                        x: Math.random() * width,
+                        y: Math.random() * height,
+                        r: Math.random() * 1.6 + 0.4,
+                        alpha: Math.random() * 0.7 + 0.2,
+                        speed: Math.random() * 0.02 + 0.006
+                    });
+                }
+            }
+
+            // Falling rain hearts
+            let rainHearts = [];
+            // Burst particles on click/move
+            let burstHearts = [];
+
+            function getTargetHeartCount() {
+                if (!isStarted) return 18; // subtle ambient hearts on intro screen
+                if (rainMode === 'soft') return 55;
+                if (rainMode === 'storm') return 185;
+                return 110; // 'romantic'
+            }
+
+            function getSpeedMultiplier() {
+                if (rainMode === 'soft') return 0.75;
+                if (rainMode === 'storm') return 1.65;
+                return 1.1;
+            }
+
+            function createRainHeart(spawnAtTop) {
+                const depth = Math.random(); // 0 (far) to 1 (near)
+                const size = depth * 18 + 7;
+                return {
+                    x: Math.random() * width,
+                    y: spawnAtTop ? -size - Math.random() * (height * 0.35) : Math.random() * height,
+                    size: size,
+                    vy: (depth * 2.1 + 1.1),
+                    vx: (Math.random() - 0.5) * 0.6,
+                    swayAmp: Math.random() * 1.4 + 0.4,
+                    swaySpeed: Math.random() * 0.025 + 0.01,
+                    swayOffset: Math.random() * Math.PI * 2,
+                    rotation: (Math.random() - 0.5) * 0.5,
+                    rotationSpeed: (Math.random() - 0.5) * 0.012,
+                    color: heartColors[Math.floor(Math.random() * heartColors.length)],
+                    alpha: depth * 0.55 + 0.35,
+                    glow: depth > 0.65
+                };
+            }
+
+            function syncRainHearts() {
+                const target = getTargetHeartCount();
+                while (rainHearts.length < target) {
+                    rainHearts.push(createRainHeart(isStarted));
+                }
+                if (rainHearts.length > target) {
+                    rainHearts.length = target;
+                }
+            }
+
+            function spawnBurst(x, y, count) {
+                for (let i = 0; i < count; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = Math.random() * 6.5 + 1.5;
+                    burstHearts.push({
+                        x: x,
+                        y: y,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed - 1.8,
+                        gravity: 0.12,
+                        size: Math.random() * 14 + 6,
+                        alpha: 1,
+                        decay: Math.random() * 0.015 + 0.012,
+                        rotation: (Math.random() - 0.5) * 0.8,
+                        color: heartColors[Math.floor(Math.random() * heartColors.length)]
+                    });
+                }
+            }
+
+            function drawHeartShape(x, y, size, rotation, color, alpha, glow) {
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(rotation);
+                ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+                ctx.fillStyle = color;
+                if (glow) {
+                    ctx.shadowColor = color;
+                    ctx.shadowBlur = 12;
+                }
+                ctx.beginPath();
+                const s = size;
+                ctx.moveTo(0, s * 0.3);
+                ctx.bezierCurveTo(0, 0, -s * 0.5, 0, -s * 0.5, s * 0.3);
+                ctx.bezierCurveTo(-s * 0.5, s * 0.65, 0, s * 0.9, 0, s * 1.15);
+                ctx.bezierCurveTo(0, s * 0.9, s * 0.5, s * 0.65, s * 0.5, s * 0.3);
+                ctx.bezierCurveTo(s * 0.5, 0, 0, 0, 0, s * 0.3);
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            }
+
+            function resizeCanvas() {
+                width = window.innerWidth;
+                height = window.innerHeight;
+                canvas.width = width;
+                canvas.height = height;
+                createStars();
+                syncRainHearts();
+            }
+
+            let frameTick = 0;
+
+            function renderLoop() {
+                frameTick++;
+                ctx.clearRect(0, 0, width, height);
+
+                // Draw subtle twinkling stars
+                for (let i = 0; i < stars.length; i++) {
+                    const st = stars[i];
+                    st.alpha += Math.sin(frameTick * st.speed) * 0.008;
+                    const clampedAlpha = Math.max(0.15, Math.min(0.85, st.alpha));
+                    ctx.fillStyle = `rgba(255, 210, 230, ${clampedAlpha})`;
+                    ctx.beginPath();
+                    ctx.arc(st.x, st.y, st.r, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Update and draw falling rain hearts
+                const mult = isStarted ? getSpeedMultiplier() : 0.45;
+                for (let i = 0; i < rainHearts.length; i++) {
+                    const h = rainHearts[i];
+                    h.y += h.vy * mult;
+                    h.x += h.vx + Math.sin(frameTick * h.swaySpeed + h.swayOffset) * h.swayAmp;
+                    h.rotation += h.rotationSpeed;
+
+                    if (h.y > height + 40) {
+                        rainHearts[i] = createRainHeart(true);
+                    }
+                    if (h.x > width + 40) h.x = -20;
+                    if (h.x < -40) h.x = width + 20;
+
+                    drawHeartShape(h.x, h.y, h.size, h.rotation, h.color, h.alpha, h.glow);
+                }
+
+                // Update and draw burst hearts
+                for (let i = burstHearts.length - 1; i >= 0; i--) {
+                    const b = burstHearts[i];
+                    b.x += b.vx;
+                    b.y += b.vy;
+                    b.vy += b.gravity;
+                    b.alpha -= b.decay;
+
+                    if (b.alpha <= 0) {
+                        burstHearts.splice(i, 1);
+                    } else {
+                        drawHeartShape(b.x, b.y, b.size, b.rotation, b.color, b.alpha, true);
+                    }
+                }
+
+                requestAnimationFrame(renderLoop);
+            }
+
+            function startHeartRain(clickX, clickY) {
+                if (isStarted) return;
+                isStarted = true;
+                playStartChord();
+
+                introScreen.classList.remove('visible-screen');
+                introScreen.classList.add('hidden-screen');
+
+                rainStage.classList.remove('hidden-screen');
+                rainStage.classList.add('visible-screen');
+
+                // Spawn a big celebratory heart burst from click position
+                const bx = typeof clickX === 'number' ? clickX : width / 2;
+                const by = typeof clickY === 'number' ? clickY : height / 2;
+                spawnBurst(bx, by, 55);
+
+                // Populate full heart rain from top and across screen
+                rainHearts = [];
+                const target = getTargetHeartCount();
+                for (let i = 0; i < target; i++) {
+                    const heart = createRainHeart(false);
+                    heart.y = Math.random() * height - height * 0.4;
+                    rainHearts.push(heart);
+                }
+            }
+
+            function updateModeUI() {
+                const activeClasses = ['bg-pink-500/80', 'text-white', 'font-medium', 'shadow'];
+                const inactiveClasses = ['text-pink-200'];
+
+                [{
+                    btn: modeSoftBtn,
+                    key: 'soft'
+                }, {
+                    btn: modeRomanticBtn,
+                    key: 'romantic'
+                }, {
+                    btn: modeStormBtn,
+                    key: 'storm'
+                }].forEach(({
+                    btn,
+                    key
+                }) => {
+                    if (rainMode === key) {
+                        btn.classList.add(...activeClasses);
+                        btn.classList.remove(...inactiveClasses);
+                    } else {
+                        btn.classList.remove(...activeClasses);
+                        btn.classList.add(...inactiveClasses);
+                    }
+                });
+                syncRainHearts();
+            }
+
+            // Xử lý khi bấm nút "Có" -> Chuyển sang Trang 2 (Mưa Trái Tim)
+            yesBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                startHeartRain(e.clientX, e.clientY);
+            });
+
+            // Xử lý khi bấm nút "Không" -> Nút "Có" to dần lên cho đến khi full màn hình
+            noBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                noClickCount++;
+                playNoBoing();
+                spawnBurst(e.clientX, e.clientY, 10);
+
+                // Đổi chữ trên nút Không và dòng phụ đề
+                const noTexts = TEXT_CONFIG.noButtonTexts || ['Không'];
+                const subTexts = TEXT_CONFIG.noReactionSubtitles || [];
+                noBtn.textContent = noTexts[Math.min(noClickCount, noTexts.length - 1)];
+                if (subTexts.length > 0) {
+                    introSubtitleEl.textContent = subTexts[Math.min(noClickCount - 1, subTexts.length - 1)];
+                }
+
+                if (noClickCount >= MAX_NO_CLICKS_TO_FULLSCREEN) {
+                    // Nút Có phóng to full màn hình (ẩn dòng chữ ấn vào để tiếp tục)
+                    yesBtn.classList.add('yes-fullscreen');
+                    yesBtnText.style.fontSize = 'clamp(4rem, 18vw, 11rem)';
+                    yesBtnText.style.lineHeight = '1.1';
+                    yesFullHint.classList.add('hidden');
+                    introSubtitleEl.classList.add('hidden');
+                    introTitleEl.classList.add('hidden');
+                    noBtn.classList.add('hidden');
+                    spawnBurst(width / 2, height / 2, 40);
+                } else {
+                    // Phóng to nút Có theo từng nấc
+                    const fontRem = 1.25 + noClickCount * 1.15;
+                    const padY = 0.9 + noClickCount * 0.85;
+                    const padX = 2.0 + noClickCount * 1.9;
+                    yesBtn.style.fontSize = fontRem + 'rem';
+                    yesBtn.style.padding = padY + 'rem ' + padX + 'rem';
+
+                    // Thu nhỏ nhẹ nút Không
+                    const noScale = Math.max(0.65, 1 - noClickCount * 0.07);
+                    noBtn.style.transform = 'scale(' + noScale + ')';
+                }
+            });
+
+            // Nút biểu tượng trái tim trên Trang 1: tạo hiệu ứng bắn tim vui mắt
+            startBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                spawnBurst(e.clientX, e.clientY, 20);
+                playPopChime();
+            });
+
+            // Interactive clicks & pointer trails on canvas during rain
+            canvas.addEventListener('pointerdown', function(e) {
+                if (!isStarted) {
+                    spawnBurst(e.clientX, e.clientY, 12);
+                    return;
+                }
+                spawnBurst(e.clientX, e.clientY, 24);
+                playPopChime();
+            });
+
+            let lastTrailTime = 0;
+            canvas.addEventListener('pointermove', function(e) {
+                if (!isStarted) return;
+                const now = performance.now();
+                if (now - lastTrailTime > 55) {
+                    lastTrailTime = now;
+                    spawnBurst(e.clientX, e.clientY, 2);
+                }
+            });
+
+            modeSoftBtn.addEventListener('click', function() {
+                rainMode = 'soft';
+                updateModeUI();
+            });
+
+            modeRomanticBtn.addEventListener('click', function() {
+                rainMode = 'romantic';
+                updateModeUI();
+            });
+
+            modeStormBtn.addEventListener('click', function() {
+                rainMode = 'storm';
+                updateModeUI();
+                spawnBurst(width / 2, height * 0.35, 35);
+            });
+
+            burstBtn.addEventListener('click', function() {
+                spawnBurst(width * (0.25 + Math.random() * 0.5), height * (0.25 + Math.random() * 0.4), 40);
+                playPopChime();
+            });
+
+            soundToggleBtn.addEventListener('click', function() {
+                soundEnabled = !soundEnabled;
+                soundIcon.textContent = soundEnabled ? '🔊' : '🔇';
+                if (soundEnabled) playPopChime();
+            });
+
+            replayBtn.addEventListener('click', function() {
+                isStarted = false;
+                resetQuestionStage();
+                rainStage.classList.remove('visible-screen');
+                rainStage.classList.add('hidden-screen');
+                introScreen.classList.remove('hidden-screen');
+                introScreen.classList.add('visible-screen');
+                syncRainHearts();
+            });
+
+            nextMessageBtn.addEventListener('click', function() {
+                if (!TEXT_CONFIG.loveMessages || TEXT_CONFIG.loveMessages.length === 0) return;
+                currentMessageIndex = (currentMessageIndex + 1) % TEXT_CONFIG.loveMessages.length;
+                floatingSubtitleEl.textContent = TEXT_CONFIG.loveMessages[currentMessageIndex];
+                spawnBurst(width / 2, height / 2, 22);
+                playPopChime();
+            });
+
+            toggleCaptionBtn.addEventListener('click', function() {
+                captionVisible = !captionVisible;
+                if (captionVisible) {
+                    centerCaption.classList.remove('opacity-0', 'scale-95');
+                    centerCaption.classList.add('opacity-95', 'scale-100');
+                } else {
+                    centerCaption.classList.remove('opacity-95', 'scale-100');
+                    centerCaption.classList.add('opacity-0', 'scale-95');
+                }
+            });
+
+            window.addEventListener('resize', resizeCanvas);
+
+            window.onload = function() {
+                applyTextConfig();
+                resizeCanvas();
+                renderLoop();
+            };
+        })();
+    </script>
+</body>
+
+</html>
